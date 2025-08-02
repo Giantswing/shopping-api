@@ -7,5 +7,6 @@ Route::get('/ping', function () {
     return response()->json(['message' => 'pong']);
 });
 
-Route::get('/basket/{slug}', [BasketController::class, 'getBasketProducts']);
 Route::get('/basket/check-if-basket-exists/{slug}', [BasketController::class, 'checkIfBasketExists']);
+
+Route::get('/basket/{slug}', [BasketController::class, 'getBasketProducts']);
