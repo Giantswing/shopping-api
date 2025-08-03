@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Basket;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class BasketController extends Controller
 {
@@ -80,7 +81,7 @@ class BasketController extends Controller
                 'password' => \Hash::make($params['password']),
             ]);
 
-            return response()->json(['success' => true], 200);
+            return response()->json(['success' => true, 'slug' => $slug], 200);
         } catch (\Exception $e) {
             Log::error('createBasket: ' . 'Message: ' . $e->getMessage() . ' File: ' . $e->getFile() . ' Line: ' . $e->getLine());
             return response()->json(['error' => 'internal-server-error'], 500);
