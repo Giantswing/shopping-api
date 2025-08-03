@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Basket;
+use App\Models\BasketProduct;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -84,6 +86,46 @@ class BasketController extends Controller
             return response()->json(['success' => true, 'slug' => $slug], 200);
         } catch (\Exception $e) {
             Log::error('createBasket: ' . 'Message: ' . $e->getMessage() . ' File: ' . $e->getFile() . ' Line: ' . $e->getLine());
+            return response()->json(['error' => 'internal-server-error'], 500);
+        }
+    }
+
+    public function addProductToBasket(Request $request, $slug)
+    {
+        try {
+            $params = $request->validate([
+                'product' => 'required|string',
+            ]);
+
+            $basket = Basket::where('slug', $slug)->first();
+            $product = Product::where('name', $params['product'])->first();
+
+            if (!$product) {
+                $product = Product::create([
+                    'name' => $params['product'],
+                    'times_added' => 1,
+                    'basket_id' => $basket->id,
+                ]);
+            } else {
+                $product->times_added++;
+                $product->save();
+            }
+
+            $basketProduct = BasketProduct::create([
+                'basket_id' => $basket->id,
+                'product_id' => $product->id,
+                'quantity' => 1,
+            ]);
+
+            $response = response()->json([
+                'success' => true,
+                'products' => $basket->products,
+                'basketProducts' => $basket->basketProducts,
+            ], 200);
+
+            return $response;
+        } catch (\Exception $e) {
+            Log::error('addProductToBasket: ' . 'Message: ' . $e->getMessage() . ' File: ' . $e->getFile() . ' Line: ' . $e->getLine());
             return response()->json(['error' => 'internal-server-error'], 500);
         }
     }

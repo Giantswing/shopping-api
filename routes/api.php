@@ -14,4 +14,5 @@ Route::post('/basket/create', [BasketController::class, 'createBasket']);
 
 Route::middleware([CheckBasketPassword::class])->group(function () {
     Route::get('/basket/{slug}', [BasketController::class, 'getBasketProducts']);
+    Route::post('/basket/{slug}/add-product', [BasketController::class, 'addProductToBasket']);
 });
