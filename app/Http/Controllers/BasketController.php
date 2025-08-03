@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Basket;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class BasketController extends Controller
 {
@@ -27,9 +28,62 @@ class BasketController extends Controller
     {
         try {
             $basket = Basket::where('slug', $slug)->first();
-            return response()->json(['exists' => $basket ? true : false], 200);
+            return response()->json(['exists' => $basket ? true : false, 'name' => $basket->name ?? null], 200);
         } catch (\Exception $e) {
+            Log::error('getBasketProducts: ' . 'Message: ' . $e->getMessage() . ' File: ' . $e->getFile() . ' Line: ' . $e->getLine());
             return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function connectToBasket(Request $request)
+    {
+        try {
+            $params = $request->validate([
+                'slug' => 'required|string',
+                'password' => 'required|string',
+            ]);
+
+            $basket = Basket::where('slug', $params['slug'])->first();
+            if (!$basket) {
+                return response()->json(['error' => 'basket-not-found'], 404);
+            }
+
+            if (!\Hash::check($params['password'], $basket->password)) {
+                return response()->json(['error' => 'invalid-password'], 401);
+            }
+
+            return response()->json(['success' => true], 200);
+        } catch (\Exception $e) {
+            Log::error('connectBasket: ' . 'Message: ' . $e->getMessage() . ' File: ' . $e->getFile() . ' Line: ' . $e->getLine());
+            return response()->json(['error' => 'internal-server-error'], 500);
+        }
+    }
+
+    public function createBasket(Request $request)
+    {
+        try {
+            $params = $request->validate([
+                'name' => 'required|string',
+                'password' => 'required|string',
+            ]);
+
+            $slug = Str::slug($params['name']);
+
+            $basket = Basket::where('slug', $slug)->first();
+            if ($basket) {
+                return response()->json(['error' => 'basket-already-exists'], 400);
+            }
+
+            $basket = Basket::create([
+                'name' => $params['name'],
+                'slug' => $slug,
+                'password' => \Hash::make($params['password']),
+            ]);
+
+            return response()->json(['success' => true], 200);
+        } catch (\Exception $e) {
+            Log::error('createBasket: ' . 'Message: ' . $e->getMessage() . ' File: ' . $e->getFile() . ' Line: ' . $e->getLine());
+            return response()->json(['error' => 'internal-server-error'], 500);
         }
     }
 }
