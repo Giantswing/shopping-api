@@ -9,7 +9,7 @@ class Product extends Model
 {
     protected $table = 'products';
 
-    protected $fillable = ['name', 'basket_id', 'times_added'];
+    protected $fillable = ['name', 'basket_id', 'times_added', 'last_added_at'];
 
     public function basket(): BelongsTo
     {

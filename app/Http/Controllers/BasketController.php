@@ -98,16 +98,18 @@ class BasketController extends Controller
             ]);
 
             $basket = Basket::where('slug', $slug)->first();
-            $product = Product::where('name', $params['product'])->first();
+            $product = Product::where('name', $params['product'])->where('basket_id', $basket->id)->first();
 
             if (!$product) {
                 $product = Product::create([
                     'name' => $params['product'],
                     'times_added' => 1,
                     'basket_id' => $basket->id,
+                    'last_added_at' => now(),
                 ]);
             } else {
                 $product->times_added++;
+                $product->last_added_at = now();
                 $product->save();
             }
 
@@ -126,6 +128,33 @@ class BasketController extends Controller
             return $response;
         } catch (\Exception $e) {
             Log::error('addProductToBasket: ' . 'Message: ' . $e->getMessage() . ' File: ' . $e->getFile() . ' Line: ' . $e->getLine());
+            return response()->json(['error' => 'internal-server-error'], 500);
+        }
+    }
+
+    public function removeProductFromBasket(Request $request, $slug)
+    {
+        try {
+            $params = $request->validate([
+                'product_id' => 'required|integer',
+            ]);
+
+            $basket = Basket::where('slug', $slug)->first();
+            $basketProduct = BasketProduct::where('basket_id', $basket->id)->where('product_id', $params['product_id'])->first();
+            if (!$basketProduct) {
+                return response()->json(['error' => 'product-not-found'], 404);
+            }
+            $basketProduct->delete();
+
+            $response = response()->json([
+                'success' => true,
+                'products' => $basket->products,
+                'basketProducts' => $basket->basketProducts,
+            ], 200);
+
+            return $response;
+        } catch (\Exception $e) {
+            Log::error('removeProductFromBasket: ' . 'Message: ' . $e->getMessage() . ' File: ' . $e->getFile() . ' Line: ' . $e->getLine());
             return response()->json(['error' => 'internal-server-error'], 500);
         }
     }
