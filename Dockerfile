@@ -1,23 +1,26 @@
-# Use FrankenPHP as the base image
-FROM ghcr.io/frankencms/frankenphp:latest
+# Use FrankenPHP base image
+FROM dunglas/frankenphp:latest-php8.3-alpine
 
-# Set working directory inside container
-WORKDIR /var/www/html
+# Install system dependencies
+RUN apk add --no-cache bash git libzip-dev supervisor
 
-# Copy composer files first (caching layer)
-COPY composer.json composer.lock ./
+# Install Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# Install required PHP extensions for Laravel + Octane
+RUN docker-php-ext-install pdo pdo_mysql pcntl zip
+
+# Copy project files
+COPY . /app
+WORKDIR /app
 
 # Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader
+ENV COMPOSER_ALLOW_SUPERUSER=1
+RUN composer install --no-dev --prefer-dist --no-interaction
 
-# Copy the rest of the project
-COPY . .
+# Install Octane with FrankenPHP server
+RUN yes | php artisan octane:install --server=frankenphp
+ENV OCTANE_SERVER=frankenphp
 
-# Make sure storage & cache are writable
-RUN chown -R www-data:www-data storage bootstrap/cache
-
-# Expose port for FrankenPHP
-EXPOSE 8000
-
-# Start FrankenPHP server
-CMD ["frankenphp", "start", "--host", "0.0.0.0", "--port", "8000"]
+# Entrypoint
+ENTRYPOINT ["sh", "/app/docker/entrypoint.sh"]

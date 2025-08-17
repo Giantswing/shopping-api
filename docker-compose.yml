@@ -1,14 +1,16 @@
-version: "3.9"
-
 services:
   app:
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - "8000:8000" # host:container
+    container_name: laravel_app
+    working_dir: /app
     volumes:
-      - .:/var/www/html # Mount your project
-      - ./database:/var/www/html/database # Persist SQLite
+      - ./storage:/app/storage
+      - ./public:/app/public
     env_file:
-      - .env.docker # Load secrets safely
+      - .env.docker
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    user: root
