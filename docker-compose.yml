@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000" # host:container
+    volumes:
+      - .:/var/www/html # Mount your project
+      - ./database:/var/www/html/database # Persist SQLite
+    env_file:
+      - .env.docker # Load secrets safely

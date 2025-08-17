@@ -1,28 +1,60 @@
+# Logs
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# MacOS / Windows system files
 .DS_Store
+Thumbs.db
+
+# Environment files (never commit secrets!)
 .env
+.env.docker
 .env.backup
 .env.production
-.phpactor.json
-.phpunit.result.cache
-/.fleet
+.env.local
+.env.test
+
+# IDEs and editors
 /.idea
-/.nova
-/.phpunit.cache
 /.vscode
+/.phpactor.json
 /.zed
-/auth.json
+/.fleet
+
+# PHPUnit & test cache
+.phpunit.result.cache
+/.phpunit.cache
+
+# Laravel / application cache & storage
+/storage/*.key
+/storage/pail
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/logs/*
+
+# Laravel compiled & generated files
+/bootstrap/cache/*.php
+
+# Vendor and node modules
+/vendor
 /node_modules
+
+# Public build files
 /public/build
 /public/hot
 /public/storage
-/storage/*.key
-/storage/pail
-/vendor
+
+# Homestead
 Homestead.json
 Homestead.yaml
-Thumbs.db
 
+# FrankenPHP (don't commit)
 **/caddy
 frankenphp
 frankenphp-worker.php
+
+# Optional: Docker-related files you might not want to commit
+docker-compose.override.yml
