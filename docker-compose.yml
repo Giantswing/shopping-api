@@ -11,6 +11,6 @@ services:
     env_file:
       - .env.docker
     ports:
-      - "8001:8000"
+      - "8001:8000" # Host port 8001 -> container port 8000
     restart: unless-stopped
     user: root
