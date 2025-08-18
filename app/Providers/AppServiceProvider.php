@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 use Opcodes\LogViewer\Facades\LogViewer;
 
@@ -22,7 +23,7 @@ class AppServiceProvider extends ServiceProvider
     {
         LogViewer::auth(function ($request) {
             $token = $request->bearerToken();
-            $expected = env('LOG_VIEWER_PRODUCTION_TOKEN');
+            $expected = config('app.log_viewer.token');
             return $token === $expected;
         });
     }
