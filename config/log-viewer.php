@@ -126,7 +126,7 @@ return [
         // ],
         'production' => [
             'name' => 'Production',
-            'host' => 'https://api-giantswing.duckdns.org/log-viewer',
+            'host' => 'https://api-giantswing.duckdns.org:6969/log-viewer',
             'auth' => [
                 'token' => env('LOG_VIEWER_PRODUCTION_TOKEN'),
             ],
