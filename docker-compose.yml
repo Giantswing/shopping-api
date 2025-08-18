@@ -11,6 +11,6 @@ services:
     env_file:
       - .env.docker
     ports:
-      - "6969:6969"
+      - "6969:8000"
     restart: unless-stopped
     user: root
