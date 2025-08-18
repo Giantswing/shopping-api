@@ -1,20 +1,16 @@
 services:
-  caddy:
+  app:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: caddy_proxy
-    restart: unless-stopped
-    ports:
-      - "6969:6969"
+    container_name: laravel_app
+    working_dir: /app
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
-      - caddy_data:/data
-      - caddy_config:/config
-    environment:
-      - DUCKDNS_API_TOKEN="fdc01a8b-dbaf-484a-aa0f-a48672d18fcf"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-volumes:
-  caddy_data:
-  caddy_config:
+      - ./storage:/app/storage
+      - ./public:/app/public
+    env_file:
+      - .env.docker
+    ports:
+      - "8001:8000" # Host port 8001 -> container port 8000
+    restart: unless-stopped
+    user: root
