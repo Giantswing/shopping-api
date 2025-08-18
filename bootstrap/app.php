@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Middleware\CheckLogViewerToken;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Foundation\Application;
@@ -15,9 +14,6 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(HandleCors::class);
-        $middleware->alias([
-            'check.logviewer' => CheckLogViewerToken::class,
-        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
