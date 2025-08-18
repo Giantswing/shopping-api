@@ -10,10 +10,8 @@ if [ -z "$APP_KEY" ]; then
     php artisan key:generate --ansi
 fi
 
-if [ "${RUN_MIGRATIONS:-false}" = "true" ]; then
-    echo "Running database migrations..."
-    php artisan migrate --force
-fi
+echo "Running database migrations..."
+php artisan migrate --force
 
 echo "Starting Supervisor..."
 exec /usr/bin/supervisord -c /app/docker/supervisor/supervisor.conf
