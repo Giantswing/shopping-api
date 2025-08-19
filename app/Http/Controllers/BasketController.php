@@ -178,4 +178,35 @@ class BasketController extends Controller
             return response()->json(['error' => 'internal-server-error'], 500);
         }
     }
+
+    public function removeProductFromList(Request $request, $slug)
+    {
+        try {
+            $params = $request->validate([
+                'product_id' => 'required|integer',
+            ]);
+
+            $basket = Basket::where('slug', $slug)->first();
+            $product = Product::where('id', $params['product_id'])->where('basket_id', $basket->id)->first();
+            if (!$product) {
+                return response()->json(['error' => 'product-not-found'], 404);
+            }
+
+            $product->delete();
+
+            $cacheKey = "basket_products_{$slug}";
+            Cache::forget($cacheKey);
+
+            $response = response()->json([
+                'success' => true,
+                'products' => $basket->products,
+                'basketProducts' => $basket->basketProducts,
+            ], 200);
+
+            return $response;
+        } catch (\Exception $e) {
+            Log::error('removeProductFromList: ' . 'Message: ' . $e->getMessage() . ' File: ' . $e->getFile() . ' Line: ' . $e->getLine());
+            return response()->json(['error' => 'internal-server-error'], 500);
+        }
+    }
 }
