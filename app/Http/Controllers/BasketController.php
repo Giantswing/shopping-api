@@ -6,6 +6,7 @@ use App\Models\Basket;
 use App\Models\BasketProduct;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -14,14 +15,27 @@ class BasketController extends Controller
     public function getBasketProducts($slug)
     {
         try {
+            $cacheKey = "basket_products_{$slug}";
+            $cached = Cache::get($cacheKey);
+
+            if ($cached) {
+                return response()->json($cached, 200);
+            }
+
             $basket = Basket::where('slug', $slug)->with('products', 'basketProducts')->first();
 
-            $response = response()->json([
+            if (!$basket) {
+                return response()->json(['error' => 'basket-not-found'], 404);
+            }
+
+            $data = [
                 'basketProducts' => $basket->basketProducts,
                 'products' => $basket->products,
-            ], 200);
+            ];
 
-            return $response;
+            Cache::put($cacheKey, $data, 21600);  // 6 hours
+
+            return response()->json($data, 200);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
@@ -119,6 +133,9 @@ class BasketController extends Controller
                 'quantity' => 1,
             ]);
 
+            $cacheKey = "basket_products_{$slug}";
+            Cache::forget($cacheKey);
+
             $response = response()->json([
                 'success' => true,
                 'products' => $basket->products,
@@ -145,6 +162,9 @@ class BasketController extends Controller
                 return response()->json(['error' => 'product-not-found'], 404);
             }
             $basketProduct->delete();
+
+            $cacheKey = "basket_products_{$slug}";
+            Cache::forget($cacheKey);
 
             $response = response()->json([
                 'success' => true,
