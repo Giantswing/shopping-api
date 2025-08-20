@@ -136,6 +136,8 @@ class BasketController extends Controller
             $cacheKey = "basket_products_{$slug}";
             Cache::forget($cacheKey);
 
+            $basket->touch();
+
             $response = response()->json([
                 'success' => true,
                 'products' => $basket->products,
@@ -145,6 +147,41 @@ class BasketController extends Controller
             return $response;
         } catch (\Exception $e) {
             Log::error('addProductToBasket: ' . 'Message: ' . $e->getMessage() . ' File: ' . $e->getFile() . ' Line: ' . $e->getLine());
+            return response()->json(['error' => 'internal-server-error'], 500);
+        }
+    }
+
+    public function editProductQuantity(Request $request, $slug)
+    {
+        try {
+            $params = $request->validate([
+                'product_id' => 'required|integer',
+                'quantity' => 'required|integer|min:1',
+            ]);
+
+            $basket = Basket::where('slug', $slug)->first();
+            $basketProduct = BasketProduct::where('basket_id', $basket->id)->where('product_id', $params['product_id'])->first();
+            if (!$basketProduct) {
+                return response()->json(['error' => 'product-not-found'], 404);
+            }
+
+            $basketProduct->quantity = $params['quantity'];
+            $basketProduct->save();
+
+            $basket->touch();
+
+            $cacheKey = "basket_products_{$slug}";
+            Cache::forget($cacheKey);
+
+            $response = response()->json([
+                'success' => true,
+                'products' => $basket->products,
+                'basketProducts' => $basket->basketProducts,
+            ], 200);
+
+            return $response;
+        } catch (\Exception $e) {
+            Log::error('editProductQuantity: ' . 'Message: ' . $e->getMessage() . ' File: ' . $e->getFile() . ' Line: ' . $e->getLine());
             return response()->json(['error' => 'internal-server-error'], 500);
         }
     }
@@ -163,6 +200,8 @@ class BasketController extends Controller
             }
             $basketProduct->delete();
 
+            $basket->touch();
+
             $cacheKey = "basket_products_{$slug}";
             Cache::forget($cacheKey);
 
@@ -175,6 +214,30 @@ class BasketController extends Controller
             return $response;
         } catch (\Exception $e) {
             Log::error('removeProductFromBasket: ' . 'Message: ' . $e->getMessage() . ' File: ' . $e->getFile() . ' Line: ' . $e->getLine());
+            return response()->json(['error' => 'internal-server-error'], 500);
+        }
+    }
+
+    public function removeAllProductsFromBasket(Request $request, $slug)
+    {
+        try {
+            $basket = Basket::where('slug', $slug)->first();
+            $basket->basketProducts()->delete();
+
+            $cacheKey = "basket_products_{$slug}";
+            Cache::forget($cacheKey);
+
+            $basket->touch();
+
+            $response = response()->json([
+                'success' => true,
+                'products' => $basket->products,
+                'basketProducts' => $basket->basketProducts,
+            ], 200);
+
+            return $response;
+        } catch (\Exception $e) {
+            Log::error('removeAllProductsFromBasket: ' . 'Message: ' . $e->getMessage() . ' File: ' . $e->getFile() . ' Line: ' . $e->getLine());
             return response()->json(['error' => 'internal-server-error'], 500);
         }
     }
@@ -193,6 +256,8 @@ class BasketController extends Controller
             }
 
             $product->delete();
+
+            $basket->touch();
 
             $cacheKey = "basket_products_{$slug}";
             Cache::forget($cacheKey);
