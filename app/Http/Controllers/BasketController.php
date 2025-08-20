@@ -33,7 +33,7 @@ class BasketController extends Controller
                 'products' => $basket->products,
             ];
 
-            Cache::put($cacheKey, $data, 21600);  // 6 hours
+            Cache::put($cacheKey, $data, 86400);  // 24 hours
 
             return response()->json($data, 200);
         } catch (\Exception $e) {
