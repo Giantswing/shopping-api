@@ -6,6 +6,7 @@ use App\Models\Basket;
 use App\Models\BasketProduct;
 use App\Models\Product;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Cache;
 
 class MigrateBasketProducts extends Command
 {
@@ -23,6 +24,8 @@ class MigrateBasketProducts extends Command
 
         $baskets = Basket::all();
         foreach ($baskets as $basket) {
+            Cache::forget('basket_products_' . $basket->slug);
+
             $this->info('Migrating basket products for basket: ' . $basket->name);
 
             $basketProducts = BasketProduct::where('basket_id', $basket->id)->get();
