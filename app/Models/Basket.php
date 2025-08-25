@@ -15,9 +15,4 @@ class Basket extends Model
     {
         return $this->hasMany(Product::class);
     }
-
-    public function basketProducts(): HasMany
-    {
-        return $this->hasMany(BasketProduct::class);
-    }
 }
