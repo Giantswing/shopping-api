@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Basket;
-use App\Models\BasketProduct;
+// use App\Models\BasketProduct;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -22,14 +22,13 @@ class BasketController extends Controller
                 return response()->json($cached, 200);
             }
 
-            $basket = Basket::where('slug', $slug)->with('products', 'basketProducts')->first();
+            $basket = Basket::where('slug', $slug)->with('products')->first();
 
             if (!$basket) {
                 return response()->json(['error' => 'basket-not-found'], 404);
             }
 
             $data = [
-                'basketProducts' => $basket->basketProducts,
                 'products' => $basket->products,
             ];
 
@@ -47,7 +46,7 @@ class BasketController extends Controller
             $basket = Basket::where('slug', $slug)->first();
             return response()->json(['exists' => $basket ? true : false, 'name' => $basket->name ?? null], 200);
         } catch (\Exception $e) {
-            Log::error('getBasketProducts: ' . 'Message: ' . $e->getMessage() . ' File: ' . $e->getFile() . ' Line: ' . $e->getLine());
+            Log::error('checkIfBasketExists: ' . 'Message: ' . $e->getMessage() . ' File: ' . $e->getFile() . ' Line: ' . $e->getLine());
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
@@ -118,20 +117,18 @@ class BasketController extends Controller
                 $product = Product::create([
                     'name' => $params['product'],
                     'times_added' => 1,
+                    'is_added' => true,
+                    'quantity' => 1,
                     'basket_id' => $basket->id,
                     'last_added_at' => now(),
                 ]);
             } else {
+                $product->is_added = true;
                 $product->times_added++;
                 $product->last_added_at = now();
+                $product->quantity = 1;
                 $product->save();
             }
-
-            $basketProduct = BasketProduct::create([
-                'basket_id' => $basket->id,
-                'product_id' => $product->id,
-                'quantity' => 1,
-            ]);
 
             $cacheKey = "basket_products_{$slug}";
             Cache::forget($cacheKey);
@@ -141,7 +138,6 @@ class BasketController extends Controller
             $response = response()->json([
                 'success' => true,
                 'products' => $basket->products,
-                'basketProducts' => $basket->basketProducts,
             ], 200);
 
             return $response;
@@ -160,13 +156,13 @@ class BasketController extends Controller
             ]);
 
             $basket = Basket::where('slug', $slug)->first();
-            $basketProduct = BasketProduct::where('basket_id', $basket->id)->where('product_id', $params['product_id'])->first();
-            if (!$basketProduct) {
+            $product = Product::where('id', $params['product_id'])->where('basket_id', $basket->id)->first();
+            if (!$product) {
                 return response()->json(['error' => 'product-not-found'], 404);
             }
 
-            $basketProduct->quantity = $params['quantity'];
-            $basketProduct->save();
+            $product->quantity = $params['quantity'];
+            $product->save();
 
             $basket->touch();
 
@@ -176,7 +172,6 @@ class BasketController extends Controller
             $response = response()->json([
                 'success' => true,
                 'products' => $basket->products,
-                'basketProducts' => $basket->basketProducts,
             ], 200);
 
             return $response;
@@ -194,11 +189,13 @@ class BasketController extends Controller
             ]);
 
             $basket = Basket::where('slug', $slug)->first();
-            $basketProduct = BasketProduct::where('basket_id', $basket->id)->where('product_id', $params['product_id'])->first();
-            if (!$basketProduct) {
+            $product = Product::where('id', $params['product_id'])->where('basket_id', $basket->id)->first();
+            if (!$product) {
                 return response()->json(['error' => 'product-not-found'], 404);
             }
-            $basketProduct->delete();
+
+            $product->is_added = false;
+            $product->save();
 
             $basket->touch();
 
@@ -208,7 +205,6 @@ class BasketController extends Controller
             $response = response()->json([
                 'success' => true,
                 'products' => $basket->products,
-                'basketProducts' => $basket->basketProducts,
             ], 200);
 
             return $response;
@@ -222,7 +218,7 @@ class BasketController extends Controller
     {
         try {
             $basket = Basket::where('slug', $slug)->first();
-            $basket->basketProducts()->delete();
+            $basket->products()->update(['is_added' => false]);
 
             $cacheKey = "basket_products_{$slug}";
             Cache::forget($cacheKey);
@@ -232,7 +228,6 @@ class BasketController extends Controller
             $response = response()->json([
                 'success' => true,
                 'products' => $basket->products,
-                'basketProducts' => $basket->basketProducts,
             ], 200);
 
             return $response;
@@ -242,7 +237,7 @@ class BasketController extends Controller
         }
     }
 
-    public function removeProductFromList(Request $request, $slug)
+    public function removeProductPermanently(Request $request, $slug)
     {
         try {
             $params = $request->validate([
@@ -265,7 +260,6 @@ class BasketController extends Controller
             $response = response()->json([
                 'success' => true,
                 'products' => $basket->products,
-                'basketProducts' => $basket->basketProducts,
             ], 200);
 
             return $response;
