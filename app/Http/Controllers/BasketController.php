@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Basket;
-// use App\Models\BasketProduct;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
