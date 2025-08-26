@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\AiController;
 use App\Models\Basket;
 use App\Models\Product;
 use Illuminate\Http\Request;
@@ -27,8 +28,10 @@ class BasketController extends Controller
                 return response()->json(['error' => 'basket-not-found'], 404);
             }
 
+            $products = $basket->products;
+
             $data = [
-                'products' => $basket->products,
+                'products' => $products,
             ];
 
             Cache::put($cacheKey, $data, 86400);  // 24 hours

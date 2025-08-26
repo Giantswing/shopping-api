@@ -112,4 +112,5 @@ return [
     'log_viewer' => [
         'token' => env('LOG_VIEWER_PRODUCTION_TOKEN'),
     ],
+    'openai_api_key' => env('OPENAI_API_KEY'),
 ];
