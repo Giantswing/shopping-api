@@ -22,6 +22,13 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         LogViewer::auth(function ($request) {
+            // Allow asset requests (CSS, JS, images) without authentication
+            $path = $request->path();
+            if (str_starts_with($path, 'vendor/log-viewer/') ||
+                    preg_match('#vendor/log-viewer/.*\.(css|js|png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot)$#i', $path)) {
+                return true;
+            }
+
             // Allow access in local environment without token
             if (app()->environment('local')) {
                 return true;
