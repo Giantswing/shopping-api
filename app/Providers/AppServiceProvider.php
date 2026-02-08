@@ -51,18 +51,18 @@ class AppServiceProvider extends ServiceProvider
                 return false;
             }
 
-            // Allow if session was set via one-time ?token= visit
-            if ($request->session()->get('log_viewer_authenticated')) {
+            // Allow Bearer token (API or when front-end sends it)
+            if (trim((string) $request->bearerToken()) === $expected) {
                 return true;
             }
 
-            // Allow if Bearer token matches (API or custom clients)
-            if ($request->bearerToken() === $expected) {
+            // Allow query param ?token= (page load with token in URL)
+            if (trim((string) $request->query('token')) === $expected) {
                 return true;
             }
 
-            // Allow if query param token matches (middleware will redirect and set session)
-            if ($request->query('token') === $expected) {
+            // Allow cookie (set by middleware when user visits with ?token=)
+            if (trim((string) $request->cookie('log_viewer_token')) === $expected) {
                 return true;
             }
 
