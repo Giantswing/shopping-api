@@ -2,10 +2,10 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
-use Opcodes\LogViewer\Facades\LogViewer;
+use Illuminate\Support\Facades\View;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -30,43 +30,52 @@ class AppServiceProvider extends ServiceProvider
             }
         }
 
-        LogViewer::auth(function ($request) {
-            // Allow asset requests (CSS, JS, images) without authentication
+        // Log Viewer: use Gate (config-only for token; env() is unreliable under Octane/config cache)
+        Gate::define('viewLogViewer', function ($user = null) {
+            $request = request();
+
+            // Allow asset requests without auth
             $path = $request->path();
             if (str_starts_with($path, 'vendor/log-viewer/') ||
                     preg_match('#vendor/log-viewer/.*\.(css|js|png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot)$#i', $path)) {
                 return true;
             }
 
-            // Allow access in local environment without token
             if (app()->environment('local')) {
                 return true;
             }
 
-            // Read from env first so it works even when config is cached
-            $expected = env('LOG_VIEWER_PRODUCTION_TOKEN') ?? config('app.log_viewer.token');
-
-            // In production, require a token to be configured; otherwise deny
-            if (empty($expected)) {
+            $expected = config('app.log_viewer.token');
+            if ($expected === null || $expected === '') {
                 return false;
             }
+            $expected = trim((string) $expected);
 
-            // Allow Bearer token (API or when front-end sends it)
-            if (trim((string) $request->bearerToken()) === $expected) {
+            $token = trim((string) $request->bearerToken());
+            if ($token !== '' && $token === $expected) {
                 return true;
             }
 
-            // Allow query param ?token= (page load with token in URL)
-            if (trim((string) $request->query('token')) === $expected) {
-                return true;
-            }
-
-            // Allow cookie (set by middleware when user visits with ?token=)
-            if (trim((string) $request->cookie('log_viewer_token')) === $expected) {
+            $token = trim((string) $request->query('token'));
+            if ($token !== '' && $token === $expected) {
                 return true;
             }
 
             return false;
+        });
+
+        // Pass token to Log Viewer view so the front-end can send it on API requests (see published view)
+        View::composer('log-viewer::index', function ($view) {
+            $request = request();
+            $expected = config('app.log_viewer.token');
+            if ($expected === null || $expected === '') {
+                return;
+            }
+            $expected = trim((string) $expected);
+            $token = trim((string) $request->query('token'));
+            if ($token !== '' && $token === $expected) {
+                $view->with('log_viewer_bearer_token', $token);
+            }
         });
     }
 }

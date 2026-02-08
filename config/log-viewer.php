@@ -85,7 +85,6 @@ return [
      */
     'middleware' => [
         'web',
-        \App\Http\Middleware\LogViewerTokenAuth::class,
         \Opcodes\LogViewer\Http\Middleware\AuthorizeLogViewer::class,
     ],
 
