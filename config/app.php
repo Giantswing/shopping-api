@@ -51,6 +51,16 @@ return [
 
     /*
      * |--------------------------------------------------------------------------
+     * | Asset URL (optional; overrides app.url for asset() when set)
+     * |--------------------------------------------------------------------------
+     * | Set ASSET_URL in production so CSS/JS always load from the correct host
+     * | (e.g. https://api-giantswing.duckdns.org:6969).
+     * |
+     */
+    'asset_url' => env('ASSET_URL'),
+
+    /*
+     * |--------------------------------------------------------------------------
      * | Application Timezone
      * |--------------------------------------------------------------------------
      * |
