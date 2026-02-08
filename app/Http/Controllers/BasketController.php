@@ -148,7 +148,7 @@ class BasketController extends Controller
                 'products' => $basket->products,
             ], 200);
 
-            LogHelper::info(__CLASS__, __FUNCTION__, __LINE__, 'Product added to basket: ' . $params['product']);
+            LogHelper::info(__CLASS__, __FUNCTION__, __LINE__, 'Product added to basket: ' . $params['product'] . ' for basket ' . $slug);
 
             return $response;
         } catch (\Exception $e) {
@@ -218,6 +218,8 @@ class BasketController extends Controller
                 'success' => true,
                 'products' => $basket->products,
             ], 200);
+
+            LogHelper::info(__CLASS__, __FUNCTION__, __LINE__, 'Product removed from basket: ' . $params['product_id']);
 
             return $response;
         } catch (\Exception $e) {
