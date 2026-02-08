@@ -43,17 +43,29 @@ class AppServiceProvider extends ServiceProvider
                 return true;
             }
 
-            // Check for bearer token
-            $token = $request->bearerToken();
             $expected = config('app.log_viewer.token');
 
-            // If no token is configured, allow access
+            // In production, require a token to be configured; otherwise deny
             if (empty($expected)) {
+                return false;
+            }
+
+            // Allow if session was set via one-time ?token= visit
+            if ($request->session()->get('log_viewer_authenticated')) {
                 return true;
             }
 
-            // Verify token matches
-            return $token === $expected;
+            // Allow if Bearer token matches (API or custom clients)
+            if ($request->bearerToken() === $expected) {
+                return true;
+            }
+
+            // Allow if query param token matches (middleware will redirect and set session)
+            if ($request->query('token') === $expected) {
+                return true;
+            }
+
+            return false;
         });
     }
 }
