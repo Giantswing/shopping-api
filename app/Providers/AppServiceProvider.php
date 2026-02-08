@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Opcodes\LogViewer\Facades\LogViewer;
 
@@ -21,6 +22,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Force root URL so asset() and route() use APP_URL (fixes proxies/Octane)
+        $appUrl = config('app.url');
+        if (! empty($appUrl)) {
+            URL::forceRootUrl($appUrl);
+        }
+
         LogViewer::auth(function ($request) {
             // Allow asset requests (CSS, JS, images) without authentication
             $path = $request->path();
