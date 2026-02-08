@@ -29,15 +29,19 @@ class LogViewerTokenAuth
             && $request->has('token')
             && trim((string) $request->query('token')) === $expected
         ) {
-            $response->cookie(
+            // cookie(name, value, minutes, path, domain, secure, httpOnly, raw, sameSite)
+            $cookie = cookie(
                 self::COOKIE_NAME,
                 $expected,
-                minutes: 60 * 24 * 7, // 7 days
-                path: '/',
-                secure: $request->secure(),
-                httpOnly: true,
-                sameSite: 'lax'
+                60 * 24 * 7, // 7 days
+                '/',
+                null,
+                $request->secure(),
+                true,
+                false,
+                'lax'
             );
+            $response->headers->setCookie($cookie);
         }
 
         return $response;
