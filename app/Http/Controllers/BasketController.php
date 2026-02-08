@@ -85,9 +85,10 @@ class BasketController extends Controller
                         'last_added_at' => $item['is_added'] ? now() : null,
                     ]);
                 } else {
+                    $wasAdded = $product->is_added;
                     $product->is_added = $item['is_added'];
                     $product->quantity = max(1, $item['quantity']);
-                    if ($item['is_added']) {
+                    if ($item['is_added'] && !$wasAdded) {
                         $product->times_added = ($product->times_added ?? 0) + 1;
                         $product->last_added_at = now();
                     }
