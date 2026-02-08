@@ -26,6 +26,7 @@ class BasketController extends Controller
             $basket = Basket::where('slug', $slug)->with('products')->first();
 
             if (!$basket) {
+                LogHelper::error(__CLASS__, __FUNCTION__, __LINE__, 'Basket not found for slug: ' . $slug);
                 return response()->json(['error' => 'basket-not-found'], 404);
             }
 
@@ -39,7 +40,7 @@ class BasketController extends Controller
 
             return response()->json($data, 200);
         } catch (\Exception $e) {
-            LogHelper::error(__CLASS__, __FUNCTION__, __LINE__, $e->getMessage());
+            LogHelper::error(__CLASS__, __FUNCTION__, __LINE__, 'Error getting basket products: ' . $e->getMessage());
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
@@ -92,6 +93,7 @@ class BasketController extends Controller
 
             $basket = Basket::where('slug', $slug)->first();
             if ($basket) {
+                LogHelper::error(__CLASS__, __FUNCTION__, __LINE__, 'Basket already exists for slug: ' . $slug);
                 return response()->json(['error' => 'basket-already-exists'], 400);
             }
 
