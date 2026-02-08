@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\AiController;
 use App\Models\Basket;
 use App\Models\Product;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 use App\Services\LogHelper;
 use Illuminate\Support\Facades\Cache;
@@ -38,6 +39,7 @@ class BasketController extends Controller
 
             return response()->json($data, 200);
         } catch (\Exception $e) {
+            LogHelper::error(__CLASS__, __FUNCTION__, __LINE__, $e->getMessage());
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
@@ -49,7 +51,7 @@ class BasketController extends Controller
             return response()->json(['exists' => $basket ? true : false, 'name' => $basket->name ?? null], 200);
         } catch (\Exception $e) {
             LogHelper::error(__CLASS__, __FUNCTION__, __LINE__, $e->getMessage());
-            return response()->json(['error' => $e->getMessage()], 500);
+            return response()->json(['error' => 'internal-server-error'], 500);
         }
     }
 
@@ -66,7 +68,8 @@ class BasketController extends Controller
                 return response()->json(['error' => 'basket-not-found'], 404);
             }
 
-            if (!\Hash::check($params['password'], $basket->password)) {
+            if (! Hash::check($params['password'], $basket->password)) {
+                LogHelper::error(__CLASS__, __FUNCTION__, __LINE__, 'Invalid password for basket ' . $params['slug']);
                 return response()->json(['error' => 'invalid-password'], 401);
             }
 
@@ -95,12 +98,14 @@ class BasketController extends Controller
             $basket = Basket::create([
                 'name' => $params['name'],
                 'slug' => $slug,
-                'password' => \Hash::make($params['password']),
+                'password' => Hash::make($params['password']),
             ]);
+
+            LogHelper::info(__CLASS__, __FUNCTION__, __LINE__, 'Basket created with slug: ' . $slug);
 
             return response()->json(['success' => true, 'slug' => $slug], 200);
         } catch (\Exception $e) {
-            LogHelper::error(__CLASS__, __FUNCTION__, __LINE__, $e->getMessage());
+            LogHelper::error(__CLASS__, __FUNCTION__, __LINE__, 'Error creating basket: ' . $e->getMessage());
             return response()->json(['error' => 'internal-server-error'], 500);
         }
     }
@@ -116,6 +121,7 @@ class BasketController extends Controller
             $product = Product::where('name', $params['product'])->where('basket_id', $basket->id)->first();
 
             if (!$product) {
+                LogHelper::error(__CLASS__, __FUNCTION__, __LINE__, 'Product not found for basket ' . $slug . ' and product ' . $params['product']);
                 $product = Product::create([
                     'name' => $params['product'],
                     'times_added' => 1,
@@ -142,9 +148,11 @@ class BasketController extends Controller
                 'products' => $basket->products,
             ], 200);
 
+            LogHelper::info(__CLASS__, __FUNCTION__, __LINE__, 'Product added to basket: ' . $params['product']);
+
             return $response;
         } catch (\Exception $e) {
-            LogHelper::error(__CLASS__, __FUNCTION__, __LINE__, $e->getMessage());
+            LogHelper::error(__CLASS__, __FUNCTION__, __LINE__, 'Error editing product quantity: ' . $e->getMessage());
             return response()->json(['error' => 'internal-server-error'], 500);
         }
     }
@@ -160,6 +168,7 @@ class BasketController extends Controller
             $basket = Basket::where('slug', $slug)->first();
             $product = Product::where('id', $params['product_id'])->where('basket_id', $basket->id)->first();
             if (!$product) {
+                LogHelper::error(__CLASS__, __FUNCTION__, __LINE__, 'Product not found for basket ' . $slug . ' and product id ' . $params['product_id']);
                 return response()->json(['error' => 'product-not-found'], 404);
             }
 
@@ -178,7 +187,7 @@ class BasketController extends Controller
 
             return $response;
         } catch (\Exception $e) {
-            LogHelper::error(__CLASS__, __FUNCTION__, __LINE__, $e->getMessage());
+            LogHelper::error(__CLASS__, __FUNCTION__, __LINE__, 'Error removing product from basket: ' . $e->getMessage());
             return response()->json(['error' => 'internal-server-error'], 500);
         }
     }
@@ -193,6 +202,7 @@ class BasketController extends Controller
             $basket = Basket::where('slug', $slug)->first();
             $product = Product::where('id', $params['product_id'])->where('basket_id', $basket->id)->first();
             if (!$product) {
+                LogHelper::error(__CLASS__, __FUNCTION__, __LINE__, 'Product not found for basket ' . $slug . ' and product id ' . $params['product_id']);
                 return response()->json(['error' => 'product-not-found'], 404);
             }
 
@@ -211,7 +221,7 @@ class BasketController extends Controller
 
             return $response;
         } catch (\Exception $e) {
-            LogHelper::error(__CLASS__, __FUNCTION__, __LINE__, $e->getMessage());
+            LogHelper::error(__CLASS__, __FUNCTION__, __LINE__, 'Error removing all products from basket: ' . $e->getMessage());
             return response()->json(['error' => 'internal-server-error'], 500);
         }
     }
@@ -234,7 +244,7 @@ class BasketController extends Controller
 
             return $response;
         } catch (\Exception $e) {
-            LogHelper::error(__CLASS__, __FUNCTION__, __LINE__, $e->getMessage());
+            LogHelper::error(__CLASS__, __FUNCTION__, __LINE__, 'Error removing product permanently: ' . $e->getMessage());
             return response()->json(['error' => 'internal-server-error'], 500);
         }
     }
@@ -249,6 +259,7 @@ class BasketController extends Controller
             $basket = Basket::where('slug', $slug)->first();
             $product = Product::where('id', $params['product_id'])->where('basket_id', $basket->id)->first();
             if (!$product) {
+                LogHelper::error(__CLASS__, __FUNCTION__, __LINE__, 'Product not found for basket ' . $slug . ' and product id ' . $params['product_id']);
                 return response()->json(['error' => 'product-not-found'], 404);
             }
 
@@ -266,7 +277,7 @@ class BasketController extends Controller
 
             return $response;
         } catch (\Exception $e) {
-            LogHelper::error(__CLASS__, __FUNCTION__, __LINE__, $e->getMessage());
+            LogHelper::error(__CLASS__, __FUNCTION__, __LINE__, 'Error removing product permanently: ' . $e->getMessage());
             return response()->json(['error' => 'internal-server-error'], 500);
         }
     }
