@@ -15,17 +15,19 @@
 </head>
 
 <body class="h-full px-3 lg:px-5 bg-gray-100 dark:bg-gray-900">
-<div id="log-viewer" class="flex h-full max-h-screen max-w-full">
+<div id="log-viewer" class="flex h-full max-h-screen max-w-full" data-bearer-token="{{ $log_viewer_bearer_token ?? '' }}">
     <router-view></router-view>
 </div>
 
 <!-- Global LogViewer Object -->
+<script type="application/json" id="log-viewer-config">@json($logViewerScriptVariables)</script>
 <script>
-    window.LogViewer = @json($logViewerScriptVariables);
-    @if(!empty($log_viewer_bearer_token ?? null))
-    window.LogViewer.headers = window.LogViewer.headers || {};
-    window.LogViewer.headers['Authorization'] = 'Bearer {{ $log_viewer_bearer_token }}';
-    @endif
+    window.LogViewer = JSON.parse(document.getElementById('log-viewer-config').textContent);
+    var token = document.getElementById('log-viewer').getAttribute('data-bearer-token');
+    if (token) {
+        window.LogViewer.headers = window.LogViewer.headers || {};
+        window.LogViewer.headers['Authorization'] = 'Bearer ' + token;
+    }
 </script>
 <script src="{{ asset(mix('app.js', config('log-viewer.assets_path'))) }}" onerror="alert('app.js failed to load. Please refresh the page, re-publish Log Viewer assets, or fix routing for vendor assets.')"></script>
 </body>
