@@ -6,8 +6,8 @@ use App\Http\Controllers\AiController;
 use App\Models\Basket;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use App\Services\LogHelper;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class BasketController extends Controller
@@ -48,7 +48,7 @@ class BasketController extends Controller
             $basket = Basket::where('slug', $slug)->first();
             return response()->json(['exists' => $basket ? true : false, 'name' => $basket->name ?? null], 200);
         } catch (\Exception $e) {
-            Log::error('checkIfBasketExists: ' . 'Message: ' . $e->getMessage() . ' File: ' . $e->getFile() . ' Line: ' . $e->getLine());
+            LogHelper::error(__CLASS__, __FUNCTION__, __LINE__, $e->getMessage());
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
@@ -72,7 +72,7 @@ class BasketController extends Controller
 
             return response()->json(['success' => true], 200);
         } catch (\Exception $e) {
-            Log::error('connectBasket: ' . 'Message: ' . $e->getMessage() . ' File: ' . $e->getFile() . ' Line: ' . $e->getLine());
+            LogHelper::error(__CLASS__, __FUNCTION__, __LINE__, $e->getMessage());
             return response()->json(['error' => 'internal-server-error'], 500);
         }
     }
@@ -100,7 +100,7 @@ class BasketController extends Controller
 
             return response()->json(['success' => true, 'slug' => $slug], 200);
         } catch (\Exception $e) {
-            Log::error('createBasket: ' . 'Message: ' . $e->getMessage() . ' File: ' . $e->getFile() . ' Line: ' . $e->getLine());
+            LogHelper::error(__CLASS__, __FUNCTION__, __LINE__, $e->getMessage());
             return response()->json(['error' => 'internal-server-error'], 500);
         }
     }
@@ -144,7 +144,7 @@ class BasketController extends Controller
 
             return $response;
         } catch (\Exception $e) {
-            Log::error('addProductToBasket: ' . 'Message: ' . $e->getMessage() . ' File: ' . $e->getFile() . ' Line: ' . $e->getLine());
+            LogHelper::error(__CLASS__, __FUNCTION__, __LINE__, $e->getMessage());
             return response()->json(['error' => 'internal-server-error'], 500);
         }
     }
@@ -178,7 +178,7 @@ class BasketController extends Controller
 
             return $response;
         } catch (\Exception $e) {
-            Log::error('editProductQuantity: ' . 'Message: ' . $e->getMessage() . ' File: ' . $e->getFile() . ' Line: ' . $e->getLine());
+            LogHelper::error(__CLASS__, __FUNCTION__, __LINE__, $e->getMessage());
             return response()->json(['error' => 'internal-server-error'], 500);
         }
     }
@@ -211,7 +211,7 @@ class BasketController extends Controller
 
             return $response;
         } catch (\Exception $e) {
-            Log::error('removeProductFromBasket: ' . 'Message: ' . $e->getMessage() . ' File: ' . $e->getFile() . ' Line: ' . $e->getLine());
+            LogHelper::error(__CLASS__, __FUNCTION__, __LINE__, $e->getMessage());
             return response()->json(['error' => 'internal-server-error'], 500);
         }
     }
@@ -234,7 +234,7 @@ class BasketController extends Controller
 
             return $response;
         } catch (\Exception $e) {
-            Log::error('removeAllProductsFromBasket: ' . 'Message: ' . $e->getMessage() . ' File: ' . $e->getFile() . ' Line: ' . $e->getLine());
+            LogHelper::error(__CLASS__, __FUNCTION__, __LINE__, $e->getMessage());
             return response()->json(['error' => 'internal-server-error'], 500);
         }
     }
@@ -266,7 +266,7 @@ class BasketController extends Controller
 
             return $response;
         } catch (\Exception $e) {
-            Log::error('removeProductFromList: ' . 'Message: ' . $e->getMessage() . ' File: ' . $e->getFile() . ' Line: ' . $e->getLine());
+            LogHelper::error(__CLASS__, __FUNCTION__, __LINE__, $e->getMessage());
             return response()->json(['error' => 'internal-server-error'], 500);
         }
     }

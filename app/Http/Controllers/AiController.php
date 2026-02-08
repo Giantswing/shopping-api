@@ -7,8 +7,8 @@ use App\Models\Product;
 use App\Models\Type;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
+use App\Services\LogHelper;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
 
 class AiController extends Controller
 {
@@ -69,7 +69,7 @@ class AiController extends Controller
             $categoriesStr = implode(', ', $categories);
 
             $prompt = "Categorize the grocery product \"$product->name\" into ONE of the following: $categoriesStr. Respond ONLY with the category name.";
-            Log::info('Prompt is ' . $prompt);
+            LogHelper::info(__CLASS__, __FUNCTION__, __LINE__, 'Prompt is ' . $prompt);
 
             $response = $client->post('chat/completions', [
                 'json' => [
@@ -104,7 +104,7 @@ class AiController extends Controller
 
             return response()->json(['type' => 'uncategorized'], 200);
         } catch (\Exception $e) {
-            Log::error('getProductType: ' . $e->getMessage());
+            LogHelper::error(__CLASS__, __FUNCTION__, __LINE__, $e->getMessage());
             $product->type = 'uncategorized';
             $product->save();
             return response()->json(['type' => 'uncategorized'], 200);
@@ -116,7 +116,7 @@ class AiController extends Controller
         try {
             $openai_key = config('app.openai_api_key');
             if (!$openai_key) {
-                Log::error('OpenAI API key missing');
+                LogHelper::error(__CLASS__, __FUNCTION__, __LINE__, 'OpenAI API key missing');
                 return null;
             }
 
@@ -129,7 +129,7 @@ class AiController extends Controller
                 'timeout' => 30.0,
             ]);
         } catch (\Exception $e) {
-            Log::error('getAIClient: ' . $e->getMessage());
+            LogHelper::error(__CLASS__, __FUNCTION__, __LINE__, $e->getMessage());
             return null;
         }
     }
