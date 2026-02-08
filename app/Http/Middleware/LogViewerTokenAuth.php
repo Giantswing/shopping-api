@@ -21,7 +21,7 @@ class LogViewerTokenAuth
             && $request->path() === $routePath
             && $request->has('token')
         ) {
-            $expected = config('app.log_viewer.token');
+            $expected = env('LOG_VIEWER_PRODUCTION_TOKEN') ?? config('app.log_viewer.token');
             if (! empty($expected) && $request->query('token') === $expected) {
                 $request->session()->put('log_viewer_authenticated', true);
                 return redirect()->to($request->url());

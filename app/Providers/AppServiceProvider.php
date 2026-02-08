@@ -43,7 +43,8 @@ class AppServiceProvider extends ServiceProvider
                 return true;
             }
 
-            $expected = config('app.log_viewer.token');
+            // Read from env first so it works even when config is cached
+            $expected = env('LOG_VIEWER_PRODUCTION_TOKEN') ?? config('app.log_viewer.token');
 
             // In production, require a token to be configured; otherwise deny
             if (empty($expected)) {
