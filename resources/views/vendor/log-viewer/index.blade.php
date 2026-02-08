@@ -20,16 +20,12 @@
 </div>
 
 <!-- Global LogViewer Object -->
-@php
-    $logViewerConfig = $logViewerScriptVariables;
-    if (!empty($log_viewer_bearer_token ?? null)) {
-        $logViewerConfig['headers'] = $logViewerConfig['headers'] ?? [];
-        $logViewerConfig['headers']['Authorization'] = 'Bearer ' . $log_viewer_bearer_token;
-    }
-@endphp
-<script type="application/json" id="log-viewer-config">{!! json_encode($logViewerConfig) !!}</script>
 <script>
-    window.LogViewer = JSON.parse(document.getElementById('log-viewer-config').textContent);
+    window.LogViewer = @json($logViewerScriptVariables);
+    @if(!empty($log_viewer_bearer_token ?? null))
+    window.LogViewer.headers = window.LogViewer.headers || {};
+    window.LogViewer.headers['Authorization'] = 'Bearer {{ $log_viewer_bearer_token }}';
+    @endif
 </script>
 <script src="{{ asset(mix('app.js', config('log-viewer.assets_path'))) }}" onerror="alert('app.js failed to load. Please refresh the page, re-publish Log Viewer assets, or fix routing for vendor assets.')"></script>
 </body>
