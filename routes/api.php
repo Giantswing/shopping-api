@@ -16,9 +16,6 @@ Route::post('/basket/create', [BasketController::class, 'createBasket']);
 Route::middleware([CheckBasketPassword::class])->group(function () {
     Route::get('/ai/get-product-type/{productId}', [AiController::class, 'getProductType']);
     Route::get('/basket/{slug}', [BasketController::class, 'getBasketProducts']);
-    Route::post('/basket/{slug}/add-product', [BasketController::class, 'addProductToBasket']);
-    Route::post('/basket/{slug}/edit-product-quantity', [BasketController::class, 'editProductQuantity']);
-    Route::post('/basket/{slug}/remove-product-from-basket', [BasketController::class, 'removeProductFromBasket']);
-    Route::post('/basket/{slug}/remove-all-products-from-basket', [BasketController::class, 'removeAllProductsFromBasket']);
+    Route::put('/basket/{slug}', [BasketController::class, 'updateBasket']);
     Route::post('/basket/{slug}/remove-product-permanently', [BasketController::class, 'removeProductPermanently']);
 });
