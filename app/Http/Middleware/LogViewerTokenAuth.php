@@ -9,8 +9,9 @@ use Symfony\Component\HttpFoundation\Response;
 class LogViewerTokenAuth
 {
     /**
-     * If user hits Log Viewer with ?token=xxx and token is valid, set session and redirect
-     * so the token is not left in the URL.
+     * If user hits Log Viewer with ?token=xxx and token is valid, set session so
+     * subsequent requests (and API calls from the UI) are allowed. We don't redirect
+     * so the session is saved with this response and works with Octane/multi-worker.
      */
     public function handle(Request $request, Closure $next): Response
     {
@@ -24,7 +25,6 @@ class LogViewerTokenAuth
             $expected = env('LOG_VIEWER_PRODUCTION_TOKEN') ?? config('app.log_viewer.token');
             if (! empty($expected) && $request->query('token') === $expected) {
                 $request->session()->put('log_viewer_authenticated', true);
-                return redirect()->to($request->url());
             }
         }
 
