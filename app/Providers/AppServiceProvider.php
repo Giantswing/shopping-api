@@ -22,10 +22,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Force root URL so asset() and route() use APP_URL (fixes proxies/Octane)
-        $appUrl = config('app.url');
-        if (! empty($appUrl)) {
-            URL::forceRootUrl($appUrl);
+        // Force root URL in production so asset() uses APP_URL (fixes proxies/Octane)
+        if (! app()->environment('local')) {
+            $appUrl = config('app.url');
+            if (! empty($appUrl)) {
+                URL::forceRootUrl($appUrl);
+            }
         }
 
         LogViewer::auth(function ($request) {
