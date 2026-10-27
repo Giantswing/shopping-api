@@ -73,12 +73,13 @@ class AiController extends Controller
 
             $response = $client->post('chat/completions', [
                 'json' => [
-                    'model' => 'gpt-4.1-nano',
+                    'model' => 'gpt-6-luna',
                     'messages' => [
                         ['role' => 'user', 'content' => $prompt],
                     ],
+                    'reasoning_effort' => 'none',
                     'temperature' => 0,
-                    'max_tokens' => 10
+                    'max_completion_tokens' => 20,
                 ],
             ]);
 
