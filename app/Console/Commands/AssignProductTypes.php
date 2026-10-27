@@ -11,7 +11,9 @@ use Illuminate\Support\Facades\Cache;
 
 class AssignProductTypes extends Command
 {
-    protected $signature = 'command:assign-product-types {--force : Assign types to all products, even those that already have a type}';
+    protected $signature = 'command:assign-product-types
+        {--force : Assign types to all products, even those that already have a type}
+        {--uncategorized : Re-assign types only for products currently marked uncategorized}';
 
     protected $description = 'Assign product types to products';
 
@@ -20,10 +22,17 @@ class AssignProductTypes extends Command
         $this->info('Assigning product types to products');
 
         $force = $this->option('force');
+        $uncategorized = $this->option('uncategorized');
+
+        if ($force && $uncategorized) {
+            $this->warn('--uncategorized is ignored when --force is set');
+        }
 
         $products = $force
             ? Product::all()
-            : Product::whereNull('type')->get();
+            : ($uncategorized
+                ? Product::where('type', 'uncategorized')->get()
+                : Product::whereNull('type')->get());
 
         $baskets = Basket::all();
         foreach ($baskets as $basket) {
@@ -36,6 +45,9 @@ class AssignProductTypes extends Command
                 $type->delete();
             }
             $this->info('All types deleted');
+        } elseif ($uncategorized) {
+            Type::where('type', 'uncategorized')->delete();
+            $this->info('Uncategorized type cache entries deleted');
         }
 
         foreach ($products as $product) {
