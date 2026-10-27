@@ -1,5 +1,5 @@
 # Use FrankenPHP base image
-FROM dunglas/frankenphp:latest-php8.3-alpine
+FROM dunglas/frankenphp:1.13.4-php8.3.36-alpine
 
 # Install system dependencies
 RUN apk add --no-cache bash git libzip-dev supervisor
@@ -9,6 +9,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 
 # Install required PHP extensions for Laravel + Octane
 RUN docker-php-ext-install pdo pdo_mysql pcntl zip
+RUN echo "session.upload_progress.enabled = Off" > /usr/local/etc/php/conf.d/99-security.ini
 
 # Copy project files
 COPY . /app
